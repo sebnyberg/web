@@ -6,4 +6,6 @@ chapter = true
 pre = "<b></b>"
 +++
 
-This section contains a number of guides, tips and tricks for working with MongoDB.
+### MongoDB
+
+# Notes and guides
