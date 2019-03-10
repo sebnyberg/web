@@ -45,7 +45,7 @@ kubectl port-forward $first_mongo_pod 27017:27017
 ```
 
 {{% notice note %}}
-In case you are new to awk, awk will traverse each row of the `kubectl get pods` command and store each field in $i, i > 1. If the first field contains the word "mongo", the statement within curly braces will be executed, and the `exit` command will stop further execution.
+In case you are new to awk, awk will traverse each row of the `kubectl get pods` command and store each field in $i, i > 0. If the first field contains the word "mongo", the statement within curly braces will be executed, and the `exit` command will stop further execution.
 {{% /notice%}}
 
 You can now connect to the database with Mongo Shell locally:
