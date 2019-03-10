@@ -45,7 +45,7 @@ db.places.find({
 })
 ```
 
-### Find a place inside an area
+### Find places within an area
 
 ```javascript
 var areaInMontevideo = {
