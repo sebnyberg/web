@@ -42,13 +42,13 @@ ordersectionsby = "weight"
 themeVariant = "red"
 
 [[menu.shortcuts]] 
-name = "<i class='fab fa-github'></i> My Github"
+name = "<i class='fab fa-github'></i>&nbsp;My Github"
 identifier = "ds"
 url = "https://github.com/sebnyberg"
 weight = 10
 
 [[menu.shortcuts]] 
-name = "<i class='fab fa-linkedin'></i> LinkedIn"
+name = "<i class='fab fa-linkedin'></i>&nbsp;LinkedIn"
 identifier = "linkedin"
 url = "https://www.linkedin.com/in/sebastian-nyberg-4a10a488/"
 weight = 11
