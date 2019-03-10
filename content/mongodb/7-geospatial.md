@@ -10,6 +10,7 @@ Create a new location (Montevideo)
 
 ```javascript
 use geo
+
 db.places.insertOne({
   geom: {
     type: "Point",

@@ -42,3 +42,22 @@ The first argument to delete functions is the same filter as in `find`:
 db.people.deleteOne({ name: "Sebastian" })
 db.people.deleteMany({ name: "Sebastian" })
 ```
+
+### Transactions
+
+In order to ensure that several deletes go through before you commit to the deletion, use a transaction:
+
+```javascript
+const session = db.getMongo().startSession()
+session.startTransaction()
+
+const someColl = session.getDatabase("mydatabase").someCollection
+const anotherColl = session.getDatabase("mydatabase").anotherCollection
+
+someColl.deleteOne()
+anotherColl.deleteOne()
+
+session.commitTransaction()
+// or if it failed:
+session.abortTransaction()
+```
