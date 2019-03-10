@@ -4,7 +4,6 @@ date = 2019-03-09T16:03:17+01:00
 weight = 3
 +++
 
-## Example document
 
 Make sure you have selected your database:
 
@@ -36,7 +35,7 @@ var me = {
 db.people.insert(me)
 ```
 
-## Finding data
+### Find document(s)
 
 Find one document:
 

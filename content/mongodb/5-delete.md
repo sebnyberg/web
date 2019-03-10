@@ -4,8 +4,6 @@ date = 2019-03-09T16:03:17+01:00
 weight = 5
 +++
 
-## Example document
-
 Make sure you have selected your database:
 
 ```javascript
@@ -36,7 +34,7 @@ var me = {
 db.people.insert(me)
 ```
 
-## Delete documents
+### Delete documents
 
 The first argument to delete functions is the same filter as in `find`:
 

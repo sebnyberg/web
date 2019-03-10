@@ -1,12 +1,10 @@
 +++
-title = "Geospatial"
+title = "Geospatial queries"
 date = 2019-03-09T16:03:17+01:00
 weight = 7
 +++
 
-[Link to MongoDB docs](https://docs.mongodb.com/manual/geospatial-queries/)
-
-## Geospatial
+### [Link to MongoDB docs](https://docs.mongodb.com/manual/geospatial-queries/)
 
 Create a new location (Montevideo)
 
@@ -28,7 +26,7 @@ To run geospatial queries against the collection, create a geospatial index:
 db.places.createIndex({ geom: "2dsphere" })
 ```
 
-### Finding places near a location
+### Find places near a location
 
 ```javascript
 var pointNearMontevideo = {
@@ -70,7 +68,7 @@ db.places.find({
 })
 ```
 
-### Creating an area from a point
+### Create an area from a point
 
 ```javascript
 var pointNearMontevideo = {

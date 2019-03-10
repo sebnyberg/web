@@ -4,8 +4,6 @@ date = 2019-03-09T16:03:17+01:00
 weight = 6
 +++
 
-## Indexes
-
 Without any index, your queries will run a complete scan, this is reflected in the `explain()`, which will contain a winning plan with a stage of "COLLSCAN"
 
 ```javascript

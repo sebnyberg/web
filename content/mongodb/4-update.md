@@ -4,8 +4,6 @@ date = 2019-03-09T16:03:17+01:00
 weight = 4
 +++
 
-## Example document
-
 Make sure you have selected your database:
 
 ```javascript
@@ -36,9 +34,7 @@ var me = {
 db.people.insert(me)
 ```
 
-## Update documents
-
-Quick examples:
+### Update documents
 
 ```javascript
 db.people.updateOne({name: "Sebastian"}, {$set: {name: "Bulbastian"}})
@@ -182,7 +178,6 @@ db.people.updateOne(
     }
   )
 ```
-
 
 ### Upserting
 

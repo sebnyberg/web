@@ -4,8 +4,6 @@ date = 2019-03-09T16:03:17+01:00
 weight = 2
 +++
 
-## Example document
-
 Make sure you have selected your database:
 
 ```javascript
@@ -36,7 +34,7 @@ var me = {
 db.people.insert(me)
 ```
 
-### Insert functions
+### Insert document(s)
 
 Insert one or many documents:
 
@@ -57,16 +55,16 @@ db.people.insertMany([{ _id: 1 },{ _id: 1 },{ _id: 2 }])
 db.people.insertMany([{ _id: 1 },{ _id: 1 },{ _id: 2 }], { ordered: false })
 ```
 
-### Something something writeconcern:
+<!-- ### Something something writeconcern
 
 ```javascript
 db.people.insertOne({ name: "Sebastian" },{ writeConcern: { w: 0 }})
-```
+``` -->
 
-### Importing data
+### Import data
 
 You can import a document from disk with `mongoimport`:
 
 ```bash
-mongoimport $FILE -d $DATABASE -c $COLLECTION --jsonArray --drop
+mongoimport mydata.json -d $DATABASE -c $COLLECTION --jsonArray --drop
 ```
