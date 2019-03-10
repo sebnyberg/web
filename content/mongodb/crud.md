@@ -246,7 +246,28 @@ db.people.updateOne(
     {$set: {"addresses.$.city": "Minas"}}
   )
 
+// Update all cities to be Minas
+db.people.updateOne(
+    {name: "Sebastian"}
+    {$set: {"addresses.$[].city": "Minas"}}
+  )
 ```
+
+Finally, if you want to update a record based on a filter other than the one that filters out matching documents, you can use arrayFilters.
+
+Example: find all people who live in Montevideo, set their non-montevideo cities to be "Not Montevideo":
+
+```javascript
+db.people.updateOne(
+  {"addresses.city": "Montevideo"},
+  {$set: {"addresses.$[el].city": "Not Montevideo"}},
+  {arrayFilters: [{"el.city": {$not: {$eq: "Montevideo"}}}]}
+)
+```
+
+{{% notice note %}}
+This does not work in Cosomos DB - don't ask me why.
+{{% /notice%}}
 
 #### Upserting
 
@@ -256,3 +277,4 @@ The field that was matched in the filter will be included in the created documen
 
 ```javascript
 db.people.updateOne({name: "Eric"}, {$set: {age: 22}}, {upsert: true})
+```
