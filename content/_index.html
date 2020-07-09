@@ -1,0 +1,19 @@
++++
+title = "Welcome"
+subtitle = "Sebastian Nyberg's personal website."
+description = "Sebastian Nyberg's personal website. I write articles about Cloud Native technology and programming, with a focus on Kubernetes and Golang."
++++
+
+<!-- {{< blocks/section >}}
+{{< figure src="image/page-default.webp"  caption="Axiom - A Hugo Theme" >}}
+{{< /blocks/section >}} -->
+
+{{< blocks/section width="max-w-2xl">}}
+{{< headless-resource "/home/welcome" >}}
+
+{{< /blocks/section >}}
+
+{{< blocks/section width="max-w-2xl" mdown="off" >}}
+<!-- {{< term-cloud "tags" >}} -->
+{{< recent-pages 3 >}}
+{{< /blocks/section >}}

@@ -1,0 +1,156 @@
+baseURL = "https://sebnyberg.com"
+
+title = "Sebastian Nyberg"
+languageCode = "en-us"
+defaultContentLanguage = "en"
+
+theme = "axiom"
+
+paginate = 2
+canonifyURLs = false
+summaryLength = 40
+rssLimit = 100
+enableEmoji = true
+enableRobotsTXT = true
+pluralizelisttitles = false
+
+[permalinks]
+posts = "/:filename"
+
+[params]
+mainSections = ["posts"]
+copyrightYear = 2019
+# Go Reference time: Mon Jan 2 15:04:05 MST 2006
+dateFormat = "Jan 2, 2006 3:04PM"
+highlight = "dark"
+
+[params.brand]
+domain = "sebnyberg.com"
+email = "seb.nyberg90@gmail.com"
+
+[params.social]
+# facebook = "https://www.facebook.com/user_or_page"
+github = "https://github.com/sebnyberg"
+# instagram = "https://instagram.com/user"
+linkedin = "https://www.linkedin.com/in/sebastian-nyberg-4a10a488/"
+# pinterest = "https://www.pinterest.com/user"
+# stackoverflow = "https://stackoverflow.com/users/user"
+twitter = "https://twitter.com/seb_nyberg"
+# youtube = "https://www.youtube.com/user"
+footer = ["twitter", "github", "linkedin"]
+# footer = ["twitter", "github", "instagram"]
+
+[params.services]
+analyticsId = "UA-160259978-2"
+adwordsId = ""
+adsenseId = ""
+adsenseAdSlotId = ""
+adsenseLoad = ""
+adwordsConversionId = ""
+adwordsConversionValue = 0
+facebookApp = ""
+facebookPixel = ""
+disqusShortname = ""
+
+[params.logo]
+inline = true
+path = "image/brand/logo.svg"
+
+[params.image]
+width = "2048"
+height = "1024"
+faviconIco = "favicon.ico"
+faviconAlt = "image/brand/favicon.png"
+icon1To1 = "image/brand/icon-1-1.png"
+icon2To1 = "image/brand/icon-2-1.png"
+# default = "image/page-default.webp"
+
+[params.font]
+type = ""
+path = ""
+files = []
+
+[params.cdn]
+provider = "local"
+type = "image"
+
+[params.cloudinary]
+host = "https://res.cloudinary.com/CLOUD_NAME/"
+version = ""
+image = "image/upload/"
+raw = "raw/upload/"
+video = "video/upload/"
+
+[params.cloudinary.presets]
+base = "f_auto,q_auto/"
+page = "w_auto,dpr_auto,c_scale,f_auto,q_auto/"
+feature = "w_auto,dpr_auto,c_scale,f_auto,q_auto/"
+summary = "w_auto,dpr_auto,c_scale,f_auto,q_auto/"
+
+[outputs]
+home = ["HTML", "ATOM"]
+section = ["HTML"]
+taxonomy = ["HTML"]
+taxonomyTerm = ["HTML"]
+
+[outputFormats]
+[outputFormats.ATOM]
+name = "ATOM"
+baseName = "feed"
+mediaType = "application/atom+xml"
+
+[mediaTypes]
+[mediaTypes."application/atom+xml"]
+suffixes = ["atom"]
+
+[markup]
+[markup.goldmark]
+[markup.goldmark.extensions]
+definitionList = false
+footnote = true
+linkify = false
+strikethrough = false
+table = true
+taskList = false
+typographer = false
+[markup.goldmark.renderer]
+unsafe = true
+[markup.goldmark.parser]
+attribute = false
+[markup.highlight]
+codeFences = true
+noClasses = false
+tabWidth = 2
+# lineNos = true
+# lineNumbersInTable = false
+
+[menu]
+[[menu.main]]
+url = "/posts/"
+name = "Posts"
+weight = 1
+
+[[menu.foot]]
+url = "/posts/"
+name = "Posts"
+weight = 1
+
+[[menu.foot]]
+url = "/about/"
+name = "About"
+weight = 2
+
+[[menu.foot]]
+url = "/contact/"
+name = "Contact"
+weight = 3
+
+[[menu.foot]]
+url = "/privacy/"
+name = "Privacy"
+weight = 4
+
+[languages]
+[languages."en"]
+weight = 1
+languageName = "English"

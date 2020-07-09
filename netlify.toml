@@ -1,0 +1,16 @@
+[build]
+environment = { HUGO_VERSION = "0.71.1" }
+publish = "public"
+command = "echo 'default context'"
+
+[context.production]
+environment = { HUGO_ENV = "production" }
+command = "npm run hugo:prd"
+
+[context.deploy-preview]
+environment = { HUGO_ENV = "development" }
+command = "npm run hugo:dev -- -b $DEPLOY_PRIME_URL"
+
+[context.branch-deploy]
+environment = { HUGO_ENV = "development" }
+command = "npm run hugo:dev -- -b $DEPLOY_PRIME_URL"
