@@ -6,7 +6,7 @@ defaultContentLanguage = "en"
 
 theme = "axiom"
 
-paginate = 2
+paginate = 10
 canonifyURLs = false
 summaryLength = 40
 rssLimit = 100
@@ -15,7 +15,7 @@ enableRobotsTXT = true
 pluralizelisttitles = false
 
 [permalinks]
-posts = "/:filename"
+# posts = "/:filename"
 
 [params]
 mainSections = ["posts"]
@@ -53,8 +53,8 @@ facebookPixel = ""
 disqusShortname = ""
 
 [params.logo]
-inline = true
-path = "image/brand/logo.svg"
+# inline = true
+# path = "image/brand/logo.svg"
 
 [params.image]
 width = "2048"
@@ -130,6 +130,11 @@ url = "/posts/"
 name = "Posts"
 weight = 1
 
+# [[menu.main]]
+# url = "/docs/"
+# name = "Docs"
+# weight = 2
+
 [[menu.foot]]
 url = "/posts/"
 name = "Posts"
@@ -145,12 +150,58 @@ url = "/contact/"
 name = "Contact"
 weight = 3
 
-[[menu.foot]]
-url = "/privacy/"
-name = "Privacy"
-weight = 4
+# [[menu.foot]]
+# url = "/privacy/"
+# name = "Privacy"
+# weight = 4
+
+# [[menu.go]]
+# url = "/go/"
+# name = "Overview"
+# weight = 1
+
+# [[menu.docs]]
+# url = "/docs/"
+# name = "Overview"
+# weight = 1
+
+# [[menu.docs]]
+# url = "/docs/quick-start/"
+# name = "Quick Start"
+# weight = 2
+
+# [[menu.docs]]
+# url = "/docs/features/"
+# name = "Features"
+# weight = 3
+
+# [[menu.docs]]
+# url = "/docs/configuration/"
+# name = "Configuration"
+# weight = 4
+
+# [[menu.docs]]
+# url = "/docs/frontmatter/"
+# name = "Frontmatter"
+# weight = 5
+
+# [[menu.docs]]
+# url = "/docs/shortcodes/"
+# name = "Shortcodes"
+# weight = 6
+
+# [[menu.docs]]
+# url = "/docs/archetypes/"
+# name = "Archetypes"
+# weight = 7
+
+# [[menu.docs]]
+# url = "/docs/extending/"
+# name = "Extending"
+# weight = 8
 
 [languages]
 [languages."en"]
 weight = 1
 languageName = "English"
+

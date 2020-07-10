@@ -1,8 +1,8 @@
 +++
 title = "Contact"
-caption = "Caption. Lorem est tota propiore conpellat pectoribus de pectora summo."
-feature = "image/page-default.webp"
-summary = "Contact. Lorem est tota propiore conpellat pectoribus de pectora summo."
+# caption = "Caption. Lorem est tota propiore conpellat pectoribus de pectora summo."
+# feature = "image/page-default.webp"
+# summary = "Contact. Lorem est tota propiore conpellat pectoribus de pectora summo."
 +++
 
 To get in touch, send an email to the address below, or connect via social media.

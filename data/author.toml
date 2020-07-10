@@ -1,13 +1,6 @@
 [default]
-name = "Axiom Theme"
-uri = "https://example.com/"
-email = "info@example.com"
-twitter = "example"
-image = "image/author/default.webp"
-
-[axiom]
-name = "Axiom Theme"
-uri = "https://example.com/"
-email = "info@example.com"
-twitter = "example"
+name = "Sebastian Nyberg"
+uri = "https://sebnyberg.com/"
+email = "seb.nyberg90@gmail.com"
+twitter = "seb_nyberg"
 image = "image/author/default.webp"
