@@ -152,7 +152,7 @@ Go has excellent support a number of encoding formats (check them out [here](htt
 
 When a XML is decoded into a struct, and a field is missing, it is simply discarded. In our case, we are not interested in the `<siteinfo>...</siteinfo>` tag. This means we can create an empty anonymous struct to skip past the Site Info section when parsing the document.
 
-Similarly, for the page, not all fields are of interest. I put the XML struct into `parser.go`:
+Similarly, for the page, not all fields are of interest. I put the XML struct into `pagereader.go`:
 
 ```go
 package wikirel
@@ -170,7 +170,7 @@ type Page struct {
 }
 ```
 
-To verify that things work, I put the example page from above into a test file (`parser_test.go`), and compare the parsed result with the original data.
+To verify that things work, I put the example page from above into a test file (`pagereader_test.go`), and compare the parsed result with the original data.
 
 ```go
 package wikirel_test
@@ -183,7 +183,7 @@ import (
 	"github.com/sebnyberg/wikirel"
 )
 
-func Test_Page(t *testing.T) {
+func Test_PageStruct(t *testing.T) {
 	var p wikirel.Page
 	if err := xml.Unmarshal([]byte(accessibleComputingXML), &p); err != nil {
 		t.Fatalf("failed to unmarshal page: %v", err)
@@ -254,7 +254,7 @@ const accessibleComputingXML = `<page>
 Tests come out clean:
 
 ```bash
-$ go test parser_test.go
+$ go test pagereader_test.go
 ok      command-line-arguments  0.070s
 ```
 
@@ -270,9 +270,9 @@ import "errors"
 var ErrNotImplemented = errors.New("not implemented")
 ```
 
-I create two new files `parser.go`, and `parser_test.go` and put them in the root directory.
+I create two new files `pagereader.go`, and `pagereader_test.go` and put them in the root directory.
 
-The parser is pretty basic, it yields pages one by one when the method `Next()` is called:
+The PageReader is pretty basic, it yields pages one by one when the method `Read()` is called. In some cases, the consumer wants to minimize memory allocations on the heap, so I provide a `ReadInto(*Page)` method as well.
 
 ```go
 package wikirel
@@ -286,29 +286,33 @@ import (
 	"path"
 )
 
-// Parser is used to read Pages from a Wikipedia download.
-type Parser interface {
-	// Next returns one page from the download.
+// PageReader reads Pages from a Wikipedia database download.
+type PageReader interface {
+	// Read returns one page from the download.
 	// The last page will return io.EOF. Subsequent calls
 	// return a nil page with io.EOF as the error.
-	Next() (*Page, error)
+	Read() (*Page, error)
+
+	// ReadInto reads the content next page into the provided page.
+	ReadInto(*Page) error
 }
 
-type parser struct{}
+type pageReader struct{}
 
 var ErrParseFailed = errors.New("parse failed")
 
-// NewParser returns a new page parser.
-// Data is assumed to be compressed in bzip2 format.
-func NewParser(r io.Reader) Parser {
-	return &parser{}
+// NewPageReader returns a new page reader.
+func NewPageReader(r io.Reader) PageReader {
+	return &pageReader{
+		dec: xml.NewDecoder(r),
+	}
 }
 
 var ErrInvalidFile = errors.New("invalid file")
 
-// NewParserFromFile creates a new page parser from file.
+// NewPageReaderFromFile creates a new page reader from file.
 // If the file path does not end with .bz2, an error is returned.
-func NewParserFromFile(filename string) (Parser, error) {
+func NewPageReaderFromFile(filename string) (PageReader, error) {
 	if ext := path.Ext(filename); ext != ".bz2" {
 		return nil, fmt.Errorf(
 			"%w: file must be in bzip2 format, was: %v",
@@ -321,22 +325,52 @@ func NewParserFromFile(filename string) (Parser, error) {
 		return nil, err
 	}
 	buf := bufio.NewReader(f)
+	bz := bzip2.NewReader(buf)
 
-	return NewParser(buf), nil
+	return NewPageReader(bz), nil
 }
 
-func (p *parser) Next() (*Page, error) {
+func (r *pageReader) Read() (*Page, error) {
+	return nil, ErrNotImplemented
+}
+
+func (r *pageReader) ReadInto(page *Page) error {
 	return nil, ErrNotImplemented
 }
 ```
 
-The reason for not just exposing `NewReader` is that new Go programmers tend to not create buffered writers (`bufio.Reader`), which in turn results in performance degradation.
+Typically when writing a function like `NewReaderFromFile`, I would use a `bufio.Reader` to avoid excessive syscalls when reading from disk. In this case however, the `bzip2` package uses an internal buffer, so there is not much to gain from wrapping it in yet another buffer. Always make sure a buffer is used when reading from / writing to disk.
 
-Every time the Go program requests to read from disk, a syscall is made, which blocks the running Goroutine. In the current case, where we read sequentially, the program would grind to a halt every time a token is read from disk.
+Let's start with a test for the `NewPageReaderFromFile` constructor:
 
-Interestingly, the bzip2 reader uses an internal buffer, so in this case the difference would be neglible, but I keep the bufio here anyway for visibility.
+```go
+func Test_NewPageReaderFromFile(t *testing.T) {
+	for _, tc := range []struct {
+		filename    string
+		expectedErr error
+	}{
+		{"somefile.xml", wikirel.ErrInvalidFile},
+		{"", wikirel.ErrInvalidFile},
+	} {
+		t.Run(tc.filename, func(t *testing.T) {
+			_, err := wikirel.NewPageReaderFromFile(tc.filename)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Fatalf("invalid err, expected: %v, got: %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+```
 
-To test the reader, I add another page (Anarchism) from the previously decompressed XML document to `parser_test.go` and construct a complete example exerpt:
+Since I've already implemented this logic, the test runs fine:
+
+```bash
+$ go test -run Test_NewPageReaderFromFile
+PASS
+ok      github.com/sebnyberg/wikirel    0.380s
+```
+
+To test the reader, I add another page (Anarchism) from the previously decompressed XML document to `pagereader_test.go` and construct a complete example exerpt:
 
 ```go
 var anarchismPage = wikirel.Page{
@@ -359,31 +393,10 @@ var completeTestSample = fmt.Sprintf(`<mediawiki xmlns="http://www.mediawiki.org
 `, siteInfo, accessibleComputing, anarchism)
 ```
 
-Let's start with a test for the `NewParseFromFile` constructor:
-
-```go
-func Test_NewParserFromFile(t *testing.T) {
-	for _, tc := range []struct {
-		filename    string
-		expectedErr error
-	}{
-		{"somefile.xml", wikirel.ErrInvalidFile},
-		{"", wikirel.ErrInvalidFile},
-	} {
-		t.Run(tc.filename, func(t *testing.T) {
-			_, err := wikirel.NewParserFromFile(tc.filename)
-			if !errors.Is(err, tc.expectedErr) {
-				t.Fatalf("invalid err, expected: %v, got: %v", tc.expectedErr, err)
-			}
-		})
-	}
-}
-```
-
 And a test for the parsing of pages:
 
 ```go
-func Test_Parser_Next(t *testing.T) {
+func Test_PageReader(t *testing.T) {
 	type result struct {
 		page *wikirel.Page
 		err  error
@@ -398,20 +411,20 @@ func Test_Parser_Next(t *testing.T) {
 		{"invalid input", "abc123", []result{{nil, wikirel.ErrParseFailed}}},
 		{"download example", downloadContents, []result{
 			{&accessibleComputingPage, nil},
-			{&anarchismPage, io.EOF},
+			{&anarchismPage, nil},
 			{nil, io.EOF},
 		}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := strings.NewReader(tc.input)
-			parser := wikirel.NewParser(r)
+			reader := wikirel.NewPageReader(r)
 			for _, expected := range tc.want {
-				p, err := parser.Next()
-				if !cmp.Equal(p, expected.page) {
-					t.Errorf("result page did not match expectation: %v", cmp.Diff(p, expected.page))
+				p, err := reader.Read()
+				if !cmp.Equal(expected.page, p, cmpopts.IgnoreFields(wikirel.Page{}, "Text")) {
+					t.Errorf("expected page did not match result\n%v", cmp.Diff(expected.page, p))
 				}
 				if !cmp.Equal(err, expected.err, cmpopts.EquateErrors()) {
-					t.Errorf("error did not match expection: %v", cmp.Diff(err, expected.err, cmpopts.EquateErrors()))
+					t.Errorf("invalid err, expected: %v, got: %v\n", expected.err, err)
 				}
 			}
 		})
@@ -422,46 +435,160 @@ func Test_Parser_Next(t *testing.T) {
 The tests (successfully) fail:
 
 ```bash
-$ go test parser_test.go
---- FAIL: Test_Parser_Next (0.00s)
-    --- FAIL: Test_Parser_Next/empty_input (0.00s)
-        parser_test.go:44: error did not match expection:   (*errors.errorString)(
-            -   e"not implemented",
-            +   e"parse failed",
+$ go test pagereader_test.go
+--- FAIL: Test_PageReader (0.00s)
+    --- FAIL: Test_PageReader/empty_input (0.00s)
+        pagereader_test.go:44: invalid err, expected: parse failed, got: not implemented
+    --- FAIL: Test_PageReader/invalid_input (0.00s)
+        pagereader_test.go:44: invalid err, expected: parse failed, got: not implemented
+    --- FAIL: Test_PageReader/download_example (0.00s)
+        pagereader_test.go:41: expected page did not match result
+              (*wikirel.Page)(
+            -   &{
+            -           Title:    "AccessibleComputing",
+            -           ID:       10,
+            -           Redirect: &wikirel.Redirect{Title: "Computer accessibility"},
+            -           Text:     "#REDIRECT [[Computer accessibility]]\n\n\t{{R from move}}\n\t{{R from CamelCase}}\n\t{{R unprintworthy}}",
+            -   },
+            +   nil,
               )
-    --- FAIL: Test_Parser_Next/invalid_input (0.00s)
-        parser_test.go:44: error did not match expection:   (*errors.errorString)(
-            -   e"not implemented",
-            +   e"parse failed",
+        pagereader_test.go:44: invalid err, expected: <nil>, got: not implemented
+        pagereader_test.go:41: expected page did not match result
+              (*wikirel.Page)(
+            -   &{Title: "Anarchism", ID: 12},
+            +   nil,
               )
-    --- FAIL: Test_Parser_Next/download_example (0.00s)
-        parser_test.go:41: result page did not match expectation:   (*wikirel.Page)(
-            -   nil,
-            +   &{
-            +           Title:    "AccessibleComputing",
-            +           ID:       10,
-            +           Redirect: &wikirel.Redirect{Title: "Computer accessibility"},
-            +           Text:     "#REDIRECT [[Computer accessibility]]\n\n\t{{R from move}}\n\t{{R from CamelCase}}\n\t{{R unprintworthy}}",
-            +   },
-              )
-        parser_test.go:44: error did not match expection:   interface{}(
-            -   e"not implemented",
-              )
-        parser_test.go:41: result page did not match expectation:   (*wikirel.Page)(
-            -   nil,
-            +   &{Title: "Anarchism", ID: 12},
-              )
-        parser_test.go:44: error did not match expection:   (*errors.errorString)(
-            -   e"not implemented",
-            +   e"EOF",
-              )
-        parser_test.go:44: error did not match expection:   (*errors.errorString)(
-            -   e"not implemented",
-            +   e"EOF",
-              )
+        pagereader_test.go:44: invalid err, expected: <nil>, got: not implemented
+        pagereader_test.go:44: invalid err, expected: EOF, got: not implemented
 FAIL
-FAIL    command-line-arguments  0.297s
-FAIL
+FAIL    command-line-arguments  0.193s
+FAIL  
 ```
 
+Let's add the XML decoder to the pageReader struct and a field to denote whether the header (mediawiki and siteinfo tags) has been skipped:
 
+```go
+type pageReader struct {
+	dec           *xml.Decoder
+	headerSkipped bool
+}
+```
+
+These are initialized in the constructor (default initialization of headerSkipped to false):
+
+```go
+// NewPageReader returns a new page reader.
+func NewPageReader(r io.Reader) PageReader {
+	return &pageReader{
+		dec: xml.NewDecoder(r),
+	}
+}
+```
+
+The `Read()` function simply initializes a new Page and passes it onto the ReadInto function:
+
+```go
+func (r *pageReader) Read() (*Page, error) {
+	var page = new(Page)
+	if err := r.ReadInto(page); err != nil {
+		return nil, err
+	}
+	return page, nil
+}
+```
+
+And `ReadInto()` skips the header if it has not yet been skipped, otherwise it decodes the next block into the provided page:
+
+```go
+func (r *pageReader) ReadInto(page *Page) error {
+	if !r.headerSkipped {
+		// Skip <mediawiki> tag
+		if _, err := r.dec.Token(); err != nil {
+			return fmt.Errorf("%w: could not parse mediawiki tag, err: %v", ErrParseFailed, err)
+		}
+
+		// Skip <siteinfo> tag
+		si := struct{}{}
+		if err := r.dec.Decode(&si); err != nil {
+			return fmt.Errorf("%w: could not parse siteinfo tag, err: %v", ErrParseFailed, err)
+		}
+
+		r.headerSkipped = true
+	}
+
+	if err := r.dec.Decode(page); err != nil {
+		if err == io.EOF {
+			return io.EOF
+		}
+		return fmt.Errorf("%w: could not parse page, err: %v", ErrParseFailed, err)
+	}
+
+	return nil
+}
+```
+
+Tests are now passing:
+
+```bash
+$ go test pagereader_test.go
+ok      command-line-arguments  0.310s
+```
+
+### Reading the entire file
+
+Let's test the solution by reading the entire file:
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"log"
+	"time"
+
+	"github.com/pkg/profile"
+	"github.com/sebnyberg/wikirel"
+)
+
+func main() {
+	// Print elapsed time
+	defer func(start time.Time) {
+		log.Println("Elapsed time: ", time.Now().Sub(start))
+	}(time.Now())
+
+	// Profile CPU usage
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+
+	r, err := wikirel.NewPageReaderFromFile("tmp/regular-part1.xml.bz2")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var p = new(wikirel.Page)
+	count := 0
+	for ; ; count++ {
+		if err := r.ReadInto(p); err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatalf("Unexpected err: %v", err)
+		}
+		if count%10 == 0 {
+			fmt.Printf("Read: %v\r", count)
+		}
+	}
+
+	log.Printf("Done! Read %v pages\n", count)
+}
+```
+
+```bash
+$ go run cmd/main/main.go
+2020/07/11 02:01:21 profile: cpu profiling enabled, cpu.pprof
+2020/07/11 02:02:08 Done! Read 19803 pages
+2020/07/11 02:02:08 profile: cpu profiling disabled, cpu.pprof
+2020/07/11 02:02:08 Elapsed time:  46.582391887s
+```
+
+Not too bad, but not exceptional either.
