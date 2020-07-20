@@ -1,0 +1,17 @@
+/* global */
+body {
+  text-rendering: optimizelegibility;
+  @apply antialiased;
+}
+
+/* pretty ups */
+a,
+button,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* alpine.js, vue.js */
+[x-cloak], [v-cloak] {
+  @apply hidden;
+}

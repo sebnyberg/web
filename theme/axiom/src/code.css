@@ -1,0 +1,51 @@
+.cdata {
+  /* <code>:wrap */
+  & pre {
+    @apply rounded;
+  }
+
+   /* <code>:block */
+  & pre > code {
+    @apply block p-4 whitespace-pre break-normal;
+    @apply overflow-auto scrolling-touch subpixel-antialiased;
+
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      @apply hidden;
+    }
+  }
+
+  /* <code>:inline */
+  & :not(pre) > code {
+    @apply rounded-sm align-baseline whitespace-normal;
+    padding: .1rem .25rem;
+  }
+
+  /* <code>:shared */
+  & pre > code,
+  & :not(pre) > code {
+    @apply font-mono font-normal leading-normal text-left text-base;
+
+    direction: ltr;
+    hyphens: none;
+    tab-size: 2;
+    letter-spacing: normal;
+    word-spacing: normal;
+  }
+
+  /* line numbers */
+  & .highlight code .ln {
+    @apply mr-4;
+  }
+
+  /* highlight line */
+  & .highlight code .hl {
+  }
+
+  @screen sm {
+    & pre > code,
+    & :not(pre) > code {
+      @apply text-sm;
+    }
+  }
+}

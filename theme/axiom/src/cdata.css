@@ -1,0 +1,211 @@
+/* cdata */
+/*
+ * Targets bare HTML elements (w/o inline styles/classes)
+ * High specificity to prevent excess cascading
+*/
+
+.cdata {
+  @apply text-raven-900a;
+
+  /* Deal with long non-spaced strings that break layout */
+  @apply break-words;
+
+  /* <hN>:typography */
+  & > h1,
+  & > h2,
+  & > h3,
+  & > h4,
+  & > h5,
+  & > h6 {
+    @apply font-content-sans font-semibold leading-tightly tracking-tight;
+  }
+
+  /* <h1>:typography */
+  & > h1 {
+    @apply text-34;
+  }
+
+  /* <hN>:typography */
+  & > h2 {
+    @apply text-26;
+  }
+
+  & > h3,
+  & > h4,
+  & > h5,
+  & > h6 {
+    @apply text-2xl;
+  }
+
+  /* <p>, <ul>, <ol>, <blockquote p>:typography */
+  & > p,
+  & > ol,
+  & > ul,
+  & > blockquote p {
+    @apply font-content-serif font-normal text-xl;
+    line-height: 1.6;
+    letter-spacing: -0.004em;
+  }
+
+  /* margin-top */
+  & > * + * {
+    @apply mt-9;
+  }
+
+  /* <hN> margin-top:stacked */
+  & > h1 + *,
+  & > h2 + *,
+  & > h3 + *,
+  & > h4 + *,
+  & > h5 + *,
+  & > h6 + * {
+    @apply mt-3;
+  }
+
+  /* extra margin */
+  & > * + h1 {
+    @apply mt-10;
+  }
+
+  /* less margin */
+  & li > p + p,
+  & > blockquote > p + p {
+    @apply mt-8;
+  }
+
+  /* remove margin */
+  /* inline injections */
+  & > link,
+  & > script,
+  & > style,
+  & > script:first-child + *,
+  & > style:first-child + *,
+  & > script:first-child + style + *,
+  & > style:first-child + script + * {
+    @apply mt-0;
+  }
+
+  /* <a>:link:visited */
+  & > a:not([role=button]):link,
+  & > a:not([role=button]):visited,
+  & > p a:link,
+  & > p a:visited,
+  & > ol li a:link,
+  & > ol li a:visited,
+  & > ul li a:link,
+  & > ul li a:visited,
+  & > blockquote a:link,
+  & > blockquote a:visited,
+  & > figure figcaption a:link,
+  & > figure figcaption a:visited,
+  & .link:link,
+  & .link:visited,
+  & > table a:link,
+  & > table a:visited,
+  & > .footnotes a:link,
+  & > .footnotes a:visited {
+    @apply text-blue-600;
+  }
+
+  /* <a>:hover:active */
+  & > a:not([role=button]):hover,
+  & > p a:hover,
+  & > ol li a:hover,
+  & > ul li a:hover,
+  & > blockquote a:hover,
+  & > figure figcaption a:hover,
+  & .link:hover,
+  & > table a:hover,
+  & > .footnotes a:hover {
+    @apply text-blue-800 underline;
+  }
+
+  /* <blockquote> */
+  /*
+   Needs to support blockquotes with multiple structures:
+   markdown:
+    - quote single or multiple paragraphs
+    - line-break (two-spaces, <br>), plus cite
+   shortcode: formal structure
+   */
+  & > blockquote {
+    @apply pl-5 border-l-4 border-raven-300;
+
+    & p {
+      /* see above at <blockquote p>:typography */
+      @apply text-raven-700;
+    }
+
+    & footer, & cite {
+      @apply font-basic-sans text-base leading-normal text-raven-500;
+    }
+  }
+
+  /* <ul>, <ol>, <li> */
+  & > ul,
+  & > ul li ul,
+  & > ul li ol,
+  & > ol,
+  & > ol li ol,
+  & > ol li ul,
+  & > .footnotes > ol {
+    padding-inline-start: 1.875rem;
+  }
+
+  & > ul,
+  & > ul li ul,
+  & > ol li ul {
+    @apply list-disc;
+  }
+
+  & > ol,
+  & > ol li ol,
+  & > ul li ol,
+  & > .footnotes > ol {
+    @apply list-decimal;
+  }
+
+  /* <hr> */
+  & > hr {
+    @apply h-px;
+    background-image: linear-gradient(to left, rgba(0,0,0,0), rgba(0,0,0,0.24), rgba(0,0,0,0));
+    border: 0;
+  }
+
+  /* <table> */
+  & > table {
+    @apply w-full border-collapse;
+
+    & th {
+      @apply font-semibold;
+      text-align: inherit;
+    }
+
+    & th, & td {
+      @apply p-2 align-top border-t border-raven-100;
+    }
+
+    & thead th {
+      @apply align-bottom border-b-2 border-raven-100;
+    }
+
+    & tbody + tbody {
+      @apply border-t-2 border-raven-100;
+    }
+  }
+
+  /* hugo footnotes */
+  & .footnotes {
+    @apply text-sm text-raven-500;
+    & > hr {
+      @apply mt-6 mb-2;
+    }
+    & .footnote-backref {
+      visibility: hidden;
+      &::before {
+        content: "\2191 \00A0";
+        visibility: visible;
+      }
+    }
+  }
+}

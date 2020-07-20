@@ -1,0 +1,13 @@
+{{- define "main" }}
+{{- with .Content }}
+{{ . }}
+{{- else }}
+<div class="default-single">
+  <div class="ax-content ax-l-o">
+    <div class="ax-l-i max-w-680">
+      {{ partial "recent-pages" (dict "Site" $.Site "Page" .) }}
+    </div>
+  </div>
+</div>
+{{- end }}
+{{- end }}
