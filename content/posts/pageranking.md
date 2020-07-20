@@ -152,7 +152,7 @@ Go has excellent support a number of encoding formats (check them out [here](htt
 
 When a XML is decoded into a struct, and a field is missing, it is simply discarded. In our case, we are not interested in the `<siteinfo>...</siteinfo>` tag. This means we can create an empty anonymous struct to skip past the Site Info section when parsing the document.
 
-Similarly, for the page, not all fields are of interest. I put the XML struct into `pagereader.go`:
+Let's start by creating the XML structs. Since these are likely to see re-use between files in the package, I put them in `wikirel.go`:
 
 ```go
 package wikirel
@@ -170,7 +170,7 @@ type Page struct {
 }
 ```
 
-To verify that things work, I put the example page from above into a test file (`pagereader_test.go`), and compare the parsed result with the original data.
+To verify that things work, I put the example page from above into a test file (`reader_test.go`), and compare the parsed result with the original data.
 
 ```go
 package wikirel_test
@@ -254,31 +254,26 @@ const accessibleComputingXML = `<page>
 Tests come out clean:
 
 ```bash
-$ go test pagereader_test.go
+$ go test reader_test.go
 ok      command-line-arguments  0.070s
 ```
 
 ### Parsing the entire XML file
 
-While developing new features, I prefer to use some generic error to mark that something is not implemented yet. I put this in `wikirel.go`:
+While developing new features, I prefer to use some generic error to mark that something is not implemented yet. I put this error in `wikirel.go`:
 
 ```go
-package wikirel
-
-import "errors"
-
 var ErrNotImplemented = errors.New("not implemented")
 ```
 
-I create two new files `pagereader.go`, and `pagereader_test.go` and put them in the root directory.
-
-The PageReader is pretty basic, it yields pages one by one when the method `Read()` is called. In some cases, the consumer wants to minimize memory allocations on the heap, so I provide a `ReadInto(*Page)` method as well.
+The next step is to implement the page reader. The idea is pretty basic, expose a function which reads the next page into the provided struct.
 
 ```go
 package wikirel
 
 import (
-	"bufio"
+	"compress/bzip2"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -286,88 +281,25 @@ import (
 	"path"
 )
 
-// PageReader reads Pages from a Wikipedia database download.
-type PageReader interface {
-	// Read returns one page from the download.
-	// The last page will return io.EOF. Subsequent calls
-	// return a nil page with io.EOF as the error.
-	Read() (*Page, error)
-
-	// ReadInto reads the content next page into the provided page.
-	ReadInto(*Page) error
-}
-
-type pageReader struct{}
+// PageReader reads Wikipedia pages from an input stream.
+type PageReader struct {}
 
 var ErrParseFailed = errors.New("parse failed")
 
-// NewPageReader returns a new page reader.
-func NewPageReader(r io.Reader) PageReader {
-	return &pageReader{
-		dec: xml.NewDecoder(r),
-	}
+// NewPageReader returns a new page reader reading from r.
+// The provided reader is expected to read plaintext XML from
+// the non-multi-stream Wikipedia database download.
+func NewPageReader(r io.Reader) *PageReader {
+	return &PageReader{}
 }
 
 var ErrInvalidFile = errors.New("invalid file")
 
-// NewPageReaderFromFile creates a new page reader from file.
-// If the file path does not end with .bz2, an error is returned.
-func NewPageReaderFromFile(filename string) (PageReader, error) {
-	if ext := path.Ext(filename); ext != ".bz2" {
-		return nil, fmt.Errorf(
-			"%w: file must be in bzip2 format, was: %v",
-			ErrInvalidFile, ext,
-		)
-	}
-
-	f, err := os.OpenFile(filename, os.O_RDONLY, 0644)
-	if err != nil {
-		return nil, err
-	}
-	buf := bufio.NewReader(f)
-	bz := bzip2.NewReader(buf)
-
-	return NewPageReader(bz), nil
+// Read stores the next page from the reader in the provided page.
+// If there are no more pages, io.EOF is returned.
+func (r *PageReader) Read(page *Page) error {
+	return ErrNotImplemented
 }
-
-func (r *pageReader) Read() (*Page, error) {
-	return nil, ErrNotImplemented
-}
-
-func (r *pageReader) ReadInto(page *Page) error {
-	return nil, ErrNotImplemented
-}
-```
-
-Typically when writing a function like `NewReaderFromFile`, I would use a `bufio.Reader` to avoid excessive syscalls when reading from disk. In this case however, the `bzip2` package uses an internal buffer, so there is not much to gain from wrapping it in yet another buffer. Always make sure a buffer is used when reading from / writing to disk.
-
-Let's start with a test for the `NewPageReaderFromFile` constructor:
-
-```go
-func Test_NewPageReaderFromFile(t *testing.T) {
-	for _, tc := range []struct {
-		filename    string
-		expectedErr error
-	}{
-		{"somefile.xml", wikirel.ErrInvalidFile},
-		{"", wikirel.ErrInvalidFile},
-	} {
-		t.Run(tc.filename, func(t *testing.T) {
-			_, err := wikirel.NewPageReaderFromFile(tc.filename)
-			if !errors.Is(err, tc.expectedErr) {
-				t.Fatalf("invalid err, expected: %v, got: %v", tc.expectedErr, err)
-			}
-		})
-	}
-}
-```
-
-Since I've already implemented this logic, the test runs fine:
-
-```bash
-$ go test -run Test_NewPageReaderFromFile
-PASS
-ok      github.com/sebnyberg/wikirel    0.380s
 ```
 
 To test the reader, I add another page (Anarchism) from the previously decompressed XML document to `pagereader_test.go` and construct a complete example exerpt:
@@ -382,7 +314,7 @@ var anarchismPage = wikirel.Page{
 	// Text: ...
 }
 
-// This article is too large to show here, TODO: see Github repo
+// This page is too large to show here, TODO: see Github repo
 const anarchismXML = ``
 
 var completeTestSample = fmt.Sprintf(`<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.10/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mediawiki.org/xml/export-0.10/ http://www.mediawiki.org/xml/export-0.10.xsd" version="0.10" xml:lang="en">
@@ -417,9 +349,10 @@ func Test_PageReader(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := strings.NewReader(tc.input)
-			reader := wikirel.NewPageReader(r)
+			pageReader := wikirel.NewPageReader(r)
 			for _, expected := range tc.want {
-				p, err := reader.Read()
+				var p wikirel.Page
+				err := pageReader.Read(&p)
 				if !cmp.Equal(expected.page, p, cmpopts.IgnoreFields(wikirel.Page{}, "Text")) {
 					t.Errorf("expected page did not match result\n%v", cmp.Diff(expected.page, p))
 				}
@@ -468,7 +401,7 @@ FAIL
 Let's add the XML decoder to the pageReader struct and a field to denote whether the header (mediawiki and siteinfo tags) has been skipped:
 
 ```go
-type pageReader struct {
+type PageReader struct {
 	dec           *xml.Decoder
 	headerSkipped bool
 }
@@ -477,30 +410,23 @@ type pageReader struct {
 These are initialized in the constructor (default initialization of headerSkipped to false):
 
 ```go
-// NewPageReader returns a new page reader.
-func NewPageReader(r io.Reader) PageReader {
-	return &pageReader{
+// NewPageReader returns a new page reader reading from r.
+// The provided reader is expected to read plaintext XML from
+// the non-multi-stream Wikipedia database download.
+func NewPageReader(r io.Reader) *PageReader {
+	return &PageReader{
 		dec: xml.NewDecoder(r),
 	}
 }
 ```
 
-The `Read()` function simply initializes a new Page and passes it onto the ReadInto function:
+`Read(*Page)` skips the header if it has not yet been skipped, otherwise it decodes the next block into the provided page:
 
 ```go
-func (r *pageReader) Read() (*Page, error) {
-	var page = new(Page)
-	if err := r.ReadInto(page); err != nil {
-		return nil, err
-	}
-	return page, nil
-}
-```
-
-And `ReadInto()` skips the header if it has not yet been skipped, otherwise it decodes the next block into the provided page:
-
-```go
-func (r *pageReader) ReadInto(page *Page) error {
+// Read stores the next page from the reader in the provided page.
+// If there are no more pages, io.EOF is returned.
+func (r *PageReader) Read(page *Page) error {
+	// Skip <mediawiki> and <siteinfo> tag once per document
 	if !r.headerSkipped {
 		// Skip <mediawiki> tag
 		if _, err := r.dec.Token(); err != nil {
@@ -557,18 +483,19 @@ func main() {
 		log.Println("Elapsed time: ", time.Now().Sub(start))
 	}(time.Now())
 
-	// Profile CPU usage
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	f, err := os.OpenFile("tmp/regular-part1.xml.bz2", os.O_RDONLY, 0644)
+	check(err)
+	bz := bzip2.NewReader(f)
 
-	r, err := wikirel.NewPageReaderFromFile("tmp/regular-part1.xml.bz2")
+	r := wikirel.NewPageReader(bz)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	var p = new(wikirel.Page)
+	var p wikirel.Page
 	count := 0
 	for ; ; count++ {
-		if err := r.ReadInto(p); err != nil {
+		if err := r.Read(&p); err != nil {
 			if err == io.EOF {
 				break
 			}
@@ -585,10 +512,97 @@ func main() {
 
 ```bash
 $ go run cmd/main/main.go
-2020/07/11 02:01:21 profile: cpu profiling enabled, cpu.pprof
 2020/07/11 02:02:08 Done! Read 19803 pages
-2020/07/11 02:02:08 profile: cpu profiling disabled, cpu.pprof
 2020/07/11 02:02:08 Elapsed time:  46.582391887s
 ```
 
 Not too bad, but not exceptional either.
+
+### Using the MultiStream format to read pages
+
+The previous solution could be run in a concurrent fashion by downloading each of the parts, then reading from files in parallel. However, there is a download format which allows for concurrent reads from a single file.
+
+The problem of reading from the same file concurrently is that the second reader needs to know how far to skip ahead. To solve this problem, the multi-stream export contains two sets of files: the regular files with pages, and indexing files containing the offsets of pages in the respective pages file. Unclear? Let's look at the data and you'll understand how this works.
+
+```bash
+curl -sL 'https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/enwiki/20200620/enwiki-20200620-pages-articles-multistream-index1.txt-p1p30303.bz2' -o tmp/index-part1.txt.bz2
+bzip2 --keep --decompress tmp/index-part1.txt.bz2
+```
+
+Let's check the head of the file:
+
+```bash
+$ head tmp/index-part1.txt
+617:10:AccessibleComputing
+617:12:Anarchism
+617:13:AfghanistanHistory
+617:14:AfghanistanGeography
+617:15:AfghanistanPeople
+617:18:AfghanistanCommunications
+617:19:AfghanistanTransportations
+617:20:AfghanistanMilitary
+617:21:AfghanistanTransnationalIssues
+617:23:AssistiveTechnology
+```
+
+And tail:
+
+```bash
+$ tail tmp/index-part1.txt
+186707777:30282:Time signature
+186707777:30283:Tristan Bernard
+186707777:30284:Statistical hypothesis testing
+186707777:30288:Tensor/Alternate
+186707777:30292:The Hobbit
+186707777:30294:The Lord of the Rings/One Ring
+186707777:30296:Tax Freedom Day
+187406849:30297:Tax
+187406849:30299:Transhumanism
+187406849:30302:TARDIS
+```
+
+The file contains blocks of indices, i.e. for each offset, there are many pages. Let's count the number of pages in each block.
+
+At the start of the file:
+
+```bash
+$ awk -v FS=':' '{ print $1 }' tmp/index-part1.txt | uniq -c | head
+ 100 617
+ 100 641127
+ 100 1956236
+ 100 3302522
+ 100 4196525
+ 100 5309395
+ 100 6192941
+ 100 7009647
+ 100 7752545
+ 100 8311623
+```
+
+And near the end of the file (notice how the last block only contains 3 pages):
+
+```bash
+$ awk -v FS=':' '{ print $1 }' tmp/index-part1.txt | uniq -c | tail
+ 100 179315631
+ 100 180285122
+ 100 181014875
+ 100 181992299
+ 100 182908869
+ 100 183630119
+ 100 184299776
+ 100 185492497
+ 100 186707777
+   3 187406849
+```
+
+{{< alert "`awk` is great for reading text. It parses the fields of each line in the input, and gives each field a variable that can be used to print. In the above example, I set the field separator (FS) to be ':', which allows me to print the byte offset in each row. Then `uniq -c` counts the number of rows with the same byte offset." info >}}
+
+Using this indexing structure, concurrent readers can pick up un-read blocks. Having more than one page per block is also good design. If the blocks were not here, it would still be a good idea to create custom blocks to reduce disk seek.
+
+```go
+```
+
+```go
+```
+
+
