@@ -1,15 +1,26 @@
-# Web
+# README
 
 ## Getting started
 
+Install hugo:
+
 ```bash
 brew install hugo
-hugo version
+```
+
+Or go to <https://github.com/gohugoio/hugo/releases>.
+
+Start the server:
+
+```bash
 hugo server
 ```
 
-## Creating a new page
+Add a post with
 
 ```bash
-hugo new content/posts/example.md
+hugo new posts/my-post.md
 ```
+
+To add a new page in the main menu, create the page in the `content/` directory,
+and add it to `config.toml`.

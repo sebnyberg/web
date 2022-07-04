@@ -1,5 +1,0 @@
-{{- $subtitle := .Description | default .Summary -}}
-{{- with .Params.subtitle }}
-  {{- $subtitle = . -}}
-{{- end }}
-{{- return chomp ($subtitle | replaceRE "\n" " " | markdownify) -}}

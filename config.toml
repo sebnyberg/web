@@ -1,207 +1,88 @@
-baseURL = "https://sebnyberg.com"
-
+baseurl = "https://sebnyberg.com"
 title = "Sebastian Nyberg"
 languageCode = "en-us"
-defaultContentLanguage = "en"
-
-theme = "axiom"
-
-paginate = 10
-canonifyURLs = false
-summaryLength = 40
-rssLimit = 100
-enableEmoji = true
-enableRobotsTXT = true
-pluralizelisttitles = false
-
-[permalinks]
-# posts = "/:filename"
+theme = "terminal"
+paginate = 5
 
 [params]
-mainSections = ["posts"]
-copyrightYear = 2019
-# Go Reference time: Mon Jan 2 15:04:05 MST 2006
-dateFormat = "Jan 2, 2006 3:04PM"
-highlight = "dark"
+  # dir name of your main content (default is `content/posts`).
+  # the list of set content will show up on your index page (baseurl).
+  contentTypeName = "posts"
 
-[params.brand]
-domain = "sebnyberg.com"
-email = "seb.nyberg90@gmail.com"
+  # ["orange", "blue", "red", "green", "pink"]
+  themeColor = "orange"
 
-[params.social]
-# facebook = "https://www.facebook.com/user_or_page"
-github = "https://github.com/sebnyberg"
-# instagram = "https://instagram.com/user"
-linkedin = "https://www.linkedin.com/in/sebastian-nyberg-4a10a488/"
-# pinterest = "https://www.pinterest.com/user"
-# stackoverflow = "https://stackoverflow.com/users/user"
-twitter = "https://twitter.com/seb_nyberg"
-# youtube = "https://www.youtube.com/user"
-footer = ["twitter", "github", "linkedin"]
-# footer = ["twitter", "github", "instagram"]
+  # if you set this to 0, only submenu trigger will be visible
+  showMenuItems = 2
 
-[params.services]
-analyticsId = "UA-160259978-2"
-adwordsId = ""
-adsenseId = ""
-adsenseAdSlotId = ""
-adsenseLoad = ""
-adwordsConversionId = ""
-adwordsConversionValue = 0
-facebookApp = ""
-facebookPixel = ""
-disqusShortname = ""
+  # show selector to switch language
+  showLanguageSelector = false
 
-[params.logo]
-# inline = true
-# path = "image/brand/logo.svg"
+  # set theme to full screen width
+  fullWidthTheme = false
 
-[params.image]
-width = "2048"
-height = "1024"
-faviconIco = "favicon.ico"
-faviconAlt = "image/brand/favicon.png"
-icon1To1 = "image/brand/icon-1-1.png"
-icon2To1 = "image/brand/icon-2-1.png"
-# default = "image/page-default.webp"
+  # center theme with default width
+  centerTheme = false
 
-[params.font]
-type = ""
-path = ""
-files = []
+  # if your resource directory contains an image called `cover.(jpg|png|webp)`,
+  # then the file will be used as a cover automatically.
+  # With this option you don't have to put the `cover` param in a front-matter.
+  autoCover = true
 
-[params.cdn]
-provider = "local"
-type = "image"
+  # set post to show the last updated
+  # If you use git, you can set `enableGitInfo` to `true` and then post will automatically get the last updated
+  showLastUpdated = false
 
-[params.cloudinary]
-host = "https://res.cloudinary.com/CLOUD_NAME/"
-version = ""
-image = "image/upload/"
-raw = "raw/upload/"
-video = "video/upload/"
+  # set a custom favicon (default is a `themeColor` square)
+  # favicon = "favicon.ico"
 
-[params.cloudinary.presets]
-base = "f_auto,q_auto/"
-page = "w_auto,dpr_auto,c_scale,f_auto,q_auto/"
-feature = "w_auto,dpr_auto,c_scale,f_auto,q_auto/"
-summary = "w_auto,dpr_auto,c_scale,f_auto,q_auto/"
+  # Provide a string as a prefix for the last update date. By default, it looks like this: 2020-xx-xx [Updated: 2020-xx-xx] :: Author
+  # updatedDatePrefix = "Updated"
 
-[outputs]
-home = ["HTML", "ATOM"]
-section = ["HTML"]
-taxonomy = ["HTML"]
-taxonomyTerm = ["HTML"]
+  # set all headings to their default size (depending on browser settings)
+  # oneHeadingSize = true # default
 
-[outputFormats]
-[outputFormats.ATOM]
-name = "ATOM"
-baseName = "feed"
-mediaType = "application/atom+xml"
+  # whether to show a page's estimated reading time
+  # readingTime = true # default
 
-[mediaTypes]
-[mediaTypes."application/atom+xml"]
-suffixes = ["atom"]
+  # whether to show a table of contents
+  # can be overridden in a page's front-matter
+  # Toc = true # default
 
-[markup]
-[markup.goldmark]
-[markup.goldmark.extensions]
-definitionList = false
-footnote = true
-linkify = false
-strikethrough = false
-table = true
-taskList = false
-typographer = false
-[markup.goldmark.renderer]
-unsafe = true
-[markup.goldmark.parser]
-attribute = false
-[markup.highlight]
-codeFences = true
-noClasses = false
-tabWidth = 2
-# lineNos = true
-# lineNumbersInTable = false
+  # set title for the table of contents
+  # can be overridden in a page's front-matter
+  # TocTitle = "Table of Contents" # default
 
-[menu]
-[[menu.main]]
-url = "/posts/"
-name = "Posts"
-weight = 1
 
-# [[menu.main]]
-# url = "/docs/"
-# name = "Docs"
-# weight = 2
-
-[[menu.foot]]
-url = "/posts/"
-name = "Posts"
-weight = 1
-
-[[menu.foot]]
-url = "/about/"
-name = "About"
-weight = 2
-
-[[menu.foot]]
-url = "/contact/"
-name = "Contact"
-weight = 3
-
-# [[menu.foot]]
-# url = "/privacy/"
-# name = "Privacy"
-# weight = 4
-
-# [[menu.go]]
-# url = "/go/"
-# name = "Overview"
-# weight = 1
-
-# [[menu.docs]]
-# url = "/docs/"
-# name = "Overview"
-# weight = 1
-
-# [[menu.docs]]
-# url = "/docs/quick-start/"
-# name = "Quick Start"
-# weight = 2
-
-# [[menu.docs]]
-# url = "/docs/features/"
-# name = "Features"
-# weight = 3
-
-# [[menu.docs]]
-# url = "/docs/configuration/"
-# name = "Configuration"
-# weight = 4
-
-# [[menu.docs]]
-# url = "/docs/frontmatter/"
-# name = "Frontmatter"
-# weight = 5
-
-# [[menu.docs]]
-# url = "/docs/shortcodes/"
-# name = "Shortcodes"
-# weight = 6
-
-# [[menu.docs]]
-# url = "/docs/archetypes/"
-# name = "Archetypes"
-# weight = 7
-
-# [[menu.docs]]
-# url = "/docs/extending/"
-# name = "Extending"
-# weight = 8
+[params.twitter]
+  # set Twitter handles for Twitter cards
+  # see https://developer.twitter.com/en/docs/tweets/optimize-with-cards/guides/getting-started#card-and-content-attribution
+  # do not include @
+  creator = "sebnyberg"
+  site = "https://sebnyberg.com"
 
 [languages]
-[languages."en"]
-weight = 1
-languageName = "English"
+  [languages.en]
+    languageName = "English"
+    title = "sebnyberg"
+    subtitle = ""
+    owner = ""
+    keywords = ""
+    copyright = ""
+    menuMore = "Show more"
+    readMore = "Read more"
+    readOtherPosts = "Read other posts"
+    newerPosts = "Newer posts"
+    olderPosts = "Older posts"
+    missingContentMessage = "Page not found..."
+    missingBackButtonLabel = "Back to home page"
 
+    [languages.en.params.logo]
+      logoText = "Terminal"
+      logoHomeLink = "/"
+
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = "about"
+        name = "About"
+        url = "/about"
