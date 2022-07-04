@@ -10,11 +10,10 @@ description = "Something"
 showFullContent = false
 readingTime = false
 hideComments = false
+draft = true
 +++
 
 ## Hi
-
-#### Hi
 
 ```go
 func main() {
